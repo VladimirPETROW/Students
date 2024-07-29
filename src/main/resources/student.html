@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Студенты</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid mt-2">
+    <div class="row">
+        <div class="col-md-6 col-lg-5 col-xl-4">
+            <div class="row text-center">
+                <div class="col fs-4">
+                    Добавление студента
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col">
+                    <form action="/api/create/" method="POST" class="create-student">
+                        <div class="row m-2 align-items-center">
+                            <label for="name" class="col-md-4 col-form-label">Имя</label>
+                            <div class="col">
+                                <input type="text" class="form-control validate" id="name" name="name" validator="word">
+                            </div>
+                        </div>
+                        <div class="row m-2 align-items-center">
+                            <label for="fam" class="col-md-4 col-form-label">Фамилия</label>
+                            <div class="col">
+                                <input type="text" class="form-control" id="fam" name="fam">
+                            </div>
+                        </div>
+                        <div class="row m-2 align-items-center">
+                            <label for="otch" class="col-md-4 col-form-label">Отчество</label>
+                            <div class="col">
+                                <input type="text" class="form-control" id="otch" name="otch">
+                            </div>
+                        </div>
+                        <div class="row m-2 align-items-center">
+                            <label for="bdate" class="col-md-4 col-form-label">Дата рождения</label>
+                            <div class="col">
+                                <input type="text" class="form-control validate" id="bdate" name="bdate" validator="date">
+                            </div>
+                        </div>
+                        <div class="row m-2 align-items-center">
+                            <label for="team" class="col-md-4 col-form-label">Группа</label>
+                            <div class="col">
+                                <input type="text" class="form-control" id="team" name="team">
+                            </div>
+                        </div>
+                        <div class="row m-2 text-end">
+                            <div class="col mt-2">
+                                <button type="submit" class="btn btn-primary">Добавить</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col col-students">
+            <table class="table table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>№</th>
+                        <th>Имя</th>
+                        <th>Фамилия</th>
+                        <th>Отчество</th>
+                        <th>Дата рождения</th>
+                        <th>Группа</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody class="students">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

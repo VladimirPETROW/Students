@@ -1,0 +1,8 @@
+.col-students {
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.invalid {
+    border: 1px solid #ff0000;
+}

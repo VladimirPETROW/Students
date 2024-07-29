@@ -3,13 +3,14 @@ package doc.test2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,10 +22,22 @@ public class Handler {
     class Response {
         public int code;
         public Object message;
+        HashMap<String, String> headers;
 
         Response(int c, Object m) {
             code = c;
             message = m;
+            headers = new HashMap<>();
+        }
+
+        public void setHeader(String key, String value) {
+            headers.put(key, value);
+        }
+
+        public void headersTo(Headers h) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                h.add(entry.getKey(), entry.getValue());
+            }
         }
     }
 
@@ -60,6 +73,7 @@ public class Handler {
             int code = 500;
             return new Response(code, String.format("{\"code\":%d,\"message\":\"%s\"}", code, message));
         }
+        response.setHeader("Content-Type", "text/json");
         return response;
     }
 
@@ -73,6 +87,17 @@ public class Handler {
         OutputStream out = exchange.getResponseBody();
         out.write(bytes);
         out.close();
+    }
+
+    ByteArrayOutputStream readBytes(InputStream input) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream(input.available());
+        int size = 1024;
+        byte[] buffer = new byte[size];
+        int count;
+        while ((count = input.read(buffer)) > 0) {
+            bytes.write(buffer, 0, count);
+        }
+        return bytes;
     }
 
     public void handle(Server.Method method, Worker worker, HttpExchange exchange, Function<Response, Response> formatter) throws IOException {
@@ -89,18 +114,38 @@ public class Handler {
             }
         }
         response = formatter.apply(response);
+        Headers headers = exchange.getResponseHeaders();
+        response.headersTo(headers);
         sendText(response.code, response.message.toString(), exchange);
     }
 
-    Response root(HttpExchange exchange) {
-        return new Response(200, "Ok");
+    Response root(HttpExchange exchange) throws IOException {
+        String start = exchange.getHttpContext().getPath();
+        String request = exchange.getRequestURI().getPath();
+        if (!request.startsWith(start)) {
+            String message = "Неверный путь.";
+            log.severe(message);
+            return new Response(500, message);
+        }
+        String last = request.substring(start.length());
+        InputStream resource;
+        ClassLoader loader = this.getClass().getClassLoader();
+        if (last.isEmpty()) {
+            resource = loader.getResourceAsStream("student.html");
+        }
+        else {
+            resource = loader.getResourceAsStream("static/" + last);
+        }
+        String text = readBytes(resource).toString();
+        return new Response(200, text);
     }
 
     Response create(HttpExchange exchange) throws IOException, SQLException {
-        InputStreamReader input = new InputStreamReader(exchange.getRequestBody());
+        InputStream input = exchange.getRequestBody();
+        String request = readBytes(input).toString();
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
-        Student student = mapper.readValue(input, Student.class);
+        Student student = mapper.readValue(request, Student.class);
         StringBuffer error = new StringBuffer();
         if (student.name == null) {
             error.append("Не указано имя.");
@@ -132,7 +177,7 @@ public class Handler {
     Response read(HttpExchange exchange) throws SQLException {
         try (Statement statement = Server.database.createStatement()) {
             ArrayList<Student> students = new ArrayList<>();
-            ResultSet rs = statement.executeQuery("SELECT id, name, fam, otch, bdate, team FROM student");
+            ResultSet rs = statement.executeQuery("SELECT id, name, fam, otch, bdate, team FROM student ORDER BY id");
             while (rs.next()) {
                 Student student = new Student();
                 student.id = rs.getLong(1);
