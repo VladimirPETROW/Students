@@ -136,6 +136,9 @@ public class Handler {
         else {
             resource = loader.getResourceAsStream("static/" + last);
         }
+        if (resource == null) {
+            return createResponse(400);
+        }
         String text = readBytes(resource).toString();
         return new Response(200, text);
     }

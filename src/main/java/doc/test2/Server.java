@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.sql.*;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 public class Server {
 
@@ -14,6 +15,8 @@ public class Server {
     Handler handler;
 
     static Connection database;
+
+    static Logger log = Logger.getLogger(Server.class.getName());
 
     enum Method {
         POST,
@@ -32,6 +35,8 @@ public class Server {
             throw new RuntimeException(e);
         }
 
+        log.info("File config.properties found.");
+
         Properties connProps = new Properties();
         String url = properties.getProperty("db.url");
         connProps.put("user", properties.getProperty("db.user"));
@@ -41,6 +46,8 @@ public class Server {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        log.info("Database connection success.");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
@@ -59,6 +66,8 @@ public class Server {
         Server server = new Server();
         server.createContexts();
         server.start();
+
+        log.info("Server started.");
     }
 
     public Server() {

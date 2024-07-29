@@ -79,6 +79,7 @@ $(document).ready(function() {
         },
         date: function(value) {
             var regex = new RegExp("^\\s*(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\s*$", "i");
+            if (!regex.test(value)) return false;
             var valueDate = value.replace(regex, "$3-$2-$1");
             var date = Date.parse(valueDate);
             return !isNaN(date);
