@@ -74,7 +74,7 @@ $(document).ready(function() {
 
     $.validator = {
         word: function(value) {
-            var regex = new RegExp("^(\\s*\\w+\\s*)+$", "i");
+            var regex = new RegExp("^(\\s*[A-Za-zА-ЯЁа-яё]+\\s*)+$", "i");
             return regex.test(value);
         },
         date: function(value) {
